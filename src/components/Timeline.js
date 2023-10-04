@@ -1,3 +1,5 @@
+import styles from  "../styles/scheduler.module.css";
+
 const formatHour = (hour) => {
     if (hour === 0) return "12 AM";
     if (hour < 12) return `${hour} AM`;
@@ -6,9 +8,9 @@ const formatHour = (hour) => {
   };
   
   const Timeline = () => (
-    <div className="timeline">
+    <div className={styles.timeline}>
       {Array(24).fill().map((_, hour) => (
-        <div key={hour} className="hour-marker">{formatHour(hour)}</div>
+        <div key={hour} className={styles.hourMarker}>{formatHour(hour)}</div>
       ))}
     </div>
   );

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Draggable from "react-draggable";
-import styles from  "../styles/DaySchedule.module.css";
+import styles from  "../styles/scheduler.module.css";
 import "react-resizable/css/styles.css";
 import useHorizontalScroll from "./HorizontalScroll";
 import Timeline from "./Timeline";
@@ -33,11 +33,11 @@ const getMovementInPixels = (deltaX) => {
 // COMPONENTS
 
 const GridTable = () => (
-  <div className="grid-table">
+  <div className={styles.gridTable}>
     {Array(24)
       .fill()
       .map((_, hour) => (
-        <div key={hour} className="grid-block"></div>
+        <div key={hour} className={styles.gridBlock}></div>
       ))}
   </div>
 );
@@ -126,7 +126,7 @@ export default function DaySchedule({ initialShifts }) {
       <Timeline />
       <div className={styles.gridContainer}>
         <GridTable />
-        <div className={shiftsLayer}>
+        <div className={styles.shiftsLayer}>
           {shifts.map((shift, index) => {
             const startMinute = timeToMinutes(shift.start);
             const widthInMinutes = timeToMinutes(shift.end) - startMinute;
@@ -146,7 +146,7 @@ export default function DaySchedule({ initialShifts }) {
                 onStop={(e, data) => handleDragStop(data, shift)}
               >
                 <div
-                  className="shift-block"
+                  className={styles.shiftBlock}
                   style={{
                     width: `${widthInMinutes * MINUTE_WIDTH}px`,
                     backgroundColor: shift.color

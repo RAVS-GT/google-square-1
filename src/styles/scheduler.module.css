@@ -36,7 +36,7 @@
     width: 100%;
   }
   
-  .griTable {
+  .gridTable {
     display: flex;
     width: max-content;
   }
@@ -47,7 +47,7 @@
   }
   
   .gridBlock {
-    width: 178px; /* 400px per hour, divided by 60 for each minute */
+    width: 168px; /* 400px per hour, divided by 60 for each minute */
     height: 100px;
     border-right: 2px solid #eee;
     /* padding: 5px; */

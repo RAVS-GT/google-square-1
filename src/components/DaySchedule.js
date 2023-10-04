@@ -35,7 +35,7 @@ const getMovementInPixels = (deltaX) => {
 const GridTable = () => (
   <div className={styles.gridTable}>
     {Array(24)
-      .fill()
+      .fill(undefined)
       .map((_, hour) => (
         <div key={hour} className={styles.gridBlock}></div>
       ))}

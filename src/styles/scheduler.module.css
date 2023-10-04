@@ -1,0 +1,62 @@
+/* styles/DaySchedule.css */
+
+.daySchedule {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    overflow-x: auto; /* Ensuring horizontal scrolling */
+    width: 100%;
+    -ms-overflow-style: none; /* for IE and Edge */
+    scrollbar-width: none;
+    white-space: nowrap;
+  }
+  
+  
+  .daSchedule::-webkit-scrollbar {
+    display: none; /* for Chrome, Safari, and Opera */
+  }
+  
+  .timeline {
+    display: flex;
+    width: max-content;
+    background-color: #f7f7f7;
+    /* margin-bottom: 5px; */
+  }
+  
+  .hour-marker {
+    width: 168px; /* Each hour is 400px wide */
+    border-right: 2px solid #eee;
+    padding: 5px;
+    text-align: left;
+    font-size: 14px;
+  }
+  
+  .gridContainer {
+    position: relative;
+    width: 100%;
+  }
+  
+  .grid-table {
+    display: flex;
+    width: max-content;
+  }
+  .shiftsLayer {
+    display: flex;
+    width: max-content;
+    height: 100px;
+  }
+  
+  .grid-block {
+    width: 178px; /* 400px per hour, divided by 60 for each minute */
+    height: 100px;
+    border-right: 2px solid #eee;
+    /* padding: 5px; */
+    background-color: #ffffff;
+  }
+  
+  .shift-block {
+    position: absolute;
+    height: 70px;
+    top: 15px; /* to center the shift block vertically within the grid block */
+  }
+  

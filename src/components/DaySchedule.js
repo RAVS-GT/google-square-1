@@ -4,31 +4,10 @@ import styles from  "../styles/scheduler.module.css";
 import "react-resizable/css/styles.css";
 import useHorizontalScroll from "./HorizontalScroll";
 import Timeline from "./Timeline";
+import ShiftForm from "./ShiftForm";
+import { timeToMinutes, minutesToTime, getMovementInPixels, MINUTE_WIDTH, } from "./functions";
 
-// CONSTANTS
-const MINUTE_WIDTH = 3;
-const SNAP_INTERVAL = 5 * MINUTE_WIDTH;
-const DRAG_THRESHOLD = 0.7;
 
-// HELPER FUNCTIONS
-const timeToMinutes = (time) => {
-  const [hours, minutes] = time.split(":").map(Number);
-  return hours * 60 + minutes;
-};
-
-const minutesToTime = (minutes) => {
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  return `${hours}:${mins < 10 ? "0" : ""}${mins}`;
-};
-
-const getMovementInPixels = (deltaX) => {
-  const percentageDragged = (deltaX % SNAP_INTERVAL) / SNAP_INTERVAL;
-  return percentageDragged >= DRAG_THRESHOLD ||
-    percentageDragged <= -DRAG_THRESHOLD
-    ? Math.ceil(deltaX / SNAP_INTERVAL) * SNAP_INTERVAL
-    : Math.floor(deltaX / SNAP_INTERVAL) * SNAP_INTERVAL;
-};
 
 // COMPONENTS
 
@@ -79,6 +58,7 @@ export default function DaySchedule({ initialShifts }) {
   );
 
   const updateShift = (targetShift, updates) => {
+   
     setShifts((prevShifts) => {
       const updatedShifts = prevShifts.map((shift) =>
         shift === targetShift ? { ...shift, ...updates } : shift
@@ -87,6 +67,7 @@ export default function DaySchedule({ initialShifts }) {
         (a, b) => timeToMinutes(a.start) - timeToMinutes(b.start)
       );
     });
+    return {...targetShift, ...updates}
   };
 
   const checkOverlap = (currentShift, deltaX) => {
@@ -103,6 +84,7 @@ export default function DaySchedule({ initialShifts }) {
   };
 
   const handleDragStop = (data, currentShift) => {
+    setSelectedShift(null);
     const deltaX = getMovementInPixels(data.x - currentShift.x);
     const movementInMinutes = Math.round(deltaX / MINUTE_WIDTH);
 
@@ -111,52 +93,178 @@ export default function DaySchedule({ initialShifts }) {
       const newEnd = timeToMinutes(currentShift.end) + movementInMinutes;
 
       // Update the state with the new times and new X position
-      updateShift(currentShift, {
+      const newShift=updateShift(currentShift, {
         start: minutesToTime(newStart),
         end: minutesToTime(newEnd),
         x: currentShift.x + deltaX
       });
+
+      console.log(newShift)
+
+      setSelectedShift(newShift);
     }
   };
 
+  const handleDelete = (deletedShift) => {
+    setShifts(prevShifts => prevShifts.filter(shift => shift !== deletedShift));
+  };
+
+
+  const [selectedShift, setSelectedShift] = useState(null);
+  
+  const handleShiftClick = (clickedShift) => {
+    if(isDragging) return;
+    setSelectedShift(null);
+    setError("");
+    if (selectedShift!=null && selectedShift.start === clickedShift.start) {
+      // If the clicked shift is already selected, deselect it
+      console.log('deselcting')
+      setSelectedShift(null);
+    } else {
+      // Otherwise, select the clicked shift
+        console.log('selecting')
+      setSelectedShift(clickedShift);
+    }
+  };
+  
+
   const scrollRef=useHorizontalScroll();
 
-  return (
-    <div className={styles.daySchedule} ref={scrollRef}>
-      <Timeline />
-      <div className={styles.gridContainer}>
-        <GridTable />
-        <div className={styles.shiftsLayer}>
-          {shifts.map((shift, index) => {
-            const startMinute = timeToMinutes(shift.start);
-            const widthInMinutes = timeToMinutes(shift.end) - startMinute;
-            const bounds = getBoundsForShift(shift, shifts);
+  const [error, setError] = useState(""); // Use a string state for generic error messages
 
-            return (
-              <Draggable
-                axis="x"
-                bounds={{
-                  top: 0,
-                  left: bounds.left,
-                  right: bounds.right,
-                  bottom: 0
-                }}
-                key={index}
-                position={{ x: shift.x, y: 0 }}
-                onStop={(e, data) => handleDragStop(data, shift)}
-              >
-                <div
-                  className={styles.shiftBlock}
-                  style={{
-                    width: `${widthInMinutes * MINUTE_WIDTH}px`,
-                    backgroundColor: shift.color
-                  }}
-                ></div>
-              </Draggable>
-            );
-          })}
+
+
+    const handleConfirm = (newShift) => {
+        const checkOverlapForNewShift = (newShift) => {
+            return shifts.some(shift => {
+                if (shift === selectedShift) return false;
+                const sStart = timeToMinutes(shift.start);
+                const sEnd = timeToMinutes(shift.end);
+                const nStart = timeToMinutes(newShift.start);
+                const nEnd = timeToMinutes(newShift.end);
+                return nStart < sEnd && nEnd > sStart;
+            });
+        };
+
+        const isValidTime = (time) => {
+            const [hours, minutes] = time.split(":");
+            return minutes % 5 === 0;
+        };
+
+        // Check if start time is after end time
+        if (timeToMinutes(newShift.start) >= timeToMinutes(newShift.end)) {
+            setError("Start time must be before end time.");
+            return;
+        }
+
+        // Check if the shift duration is less than 15 minutes
+        if (timeToMinutes(newShift.end) - timeToMinutes(newShift.start) < 15) {
+            setError("Shift duration should be at least 15 minutes.");
+            return;
+        }
+
+        // Check for overlap with existing shifts
+        if (checkOverlapForNewShift(newShift)) {
+            setError("The new shift times overlap with another shift.");
+            return;
+        }
+
+        if(!isValidTime(newShift.start) || !isValidTime(newShift.end)) {
+            setError("Shift times must be in 5 minute increments.");
+            return;
+        }
+
+        // Update the shifts with the new times
+        updateShift(selectedShift, {
+            start: newShift.start,
+            end: newShift.end,
+            x: newShift.x,
+        })
+
+        // Deselect the shift after confirming and reset error state
+        setSelectedShift(null);
+        setError("");
+    };
+
+    const [isDragging, setIsDragging] = useState(false);
+
+    const eventControl = (event, info) => {
+
+
+        if (event.type === 'mousemove' || event.type === 'touchmove') {
+
+        setIsDragging(true)
+
+        }
+
+        if (event.type === 'mouseup' || event.type === 'touchend') {
+            
+        setTimeout(() => {
+            setIsDragging(false);
+
+        }, 100);
+
+        }
+    }
+
+  return (
+    <>
+        <div className={styles.daySchedule} ref={scrollRef}>
+        <Timeline />
+        <div className={styles.gridContainer}>
+            <GridTable />
+            <div className={styles.shiftsLayer}>
+            {shifts.map((shift, index) => {
+                const startMinute = timeToMinutes(shift.start);
+                const widthInMinutes = timeToMinutes(shift.end) - startMinute;
+                const bounds = getBoundsForShift(shift, shifts);
+                return (
+                <Draggable
+                    axis="x"
+                    bounds={{
+                    top: 0,
+                    left: bounds.left,
+                    right: bounds.right,
+                    bottom: 0
+                    }}
+                    key={index}
+                    position={{ x: shift.x, y: 0 }}
+                    onDrag={eventControl}
+                    onStop={(e, data) => {
+                        handleDragStop(data, shift)
+                        eventControl(e, data)
+                    }}
+                    disabled={selectedShift == null || shift.start != selectedShift.start}
+                >
+                    <div
+                    className={styles.shiftBlock}
+                    style={{
+                        width: `${widthInMinutes * MINUTE_WIDTH}px`,
+                        backgroundColor: shift.color,
+                        border: shift.start == selectedShift?.start ? '2px solid blue' : 'none',
+                    }}
+                    onClick={() => handleShiftClick(shift)}
+                    >
+                        {shift.start} - {shift.end}
+                        <button className={styles.deleteShift} onClick={() => handleDelete(shift)}>X</button>
+                    </div>
+                </Draggable>
+                );
+            })}
+            </div>
         </div>
-      </div>
-    </div>
+        </div>
+        <ShiftForm
+                    shift={selectedShift==null ? {start:'', end:''} : selectedShift}
+                    error={error}
+                    onCancel={() => {
+                        setSelectedShift(null);
+                        setError(""); // Reset the error when cancelling
+                    }}          
+                    onSubmit={handleConfirm}
+                /> 
+                
+    </>
   );
 }
+

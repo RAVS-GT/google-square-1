@@ -1,5 +1,13 @@
 /* styles/DaySchedule.css */
 
+.drawer {
+    z-index: 9999;
+}
+
+.container {
+    width: 100vw;
+}
+
 .daySchedule {
     display: flex;
     flex-direction: column;
@@ -24,7 +32,7 @@
   }
   
   .hourMarker {
-    width: 168px; /* Each hour is 400px wide */
+    width: 120px; /* Each hour is 400px wide */
     border-right: 2px solid #eee;
     padding: 5px;
     text-align: left;
@@ -34,6 +42,7 @@
   .gridContainer {
     position: relative;
     width: 100%;
+    /* z-index: -1; */
   }
   
   .gridTable {
@@ -46,8 +55,9 @@
     height: 100px;
   }
   
+
   .gridBlock {
-    width: 168px; /* 400px per hour, divided by 60 for each minute */
+    width: 120px; /* 400px per hour, divided by 60 for each minute */
     height: 100px;
     border-right: 2px solid #eee;
     /* padding: 5px; */
@@ -58,5 +68,30 @@
     position: absolute;
     height: 70px;
     top: 15px; /* to center the shift block vertically within the grid block */
+    border-radius: 8px;
+    --shadow-color: hsl(0deg 0% 0% / 0.25);
   }
+
+  .deleteShift {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: rgba(255, 0, 0, 0.6); /* Red background */
+    border: none;
+    cursor: pointer;
+    color: white;
+    border-radius: 50%; /* makes it circular */
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    line-height: 20px; /* vertically center the X */
+  }
+
+  .shiftBlock:hover .deleteShift {
+    display: block;
+}
+  
+.deleteShift {
+    display: none;
+}
   

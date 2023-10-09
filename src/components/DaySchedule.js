@@ -219,7 +219,7 @@ export default function DaySchedule({ initialShifts, employee }) {
       endDate: new Date().setMonth(11) 
       }); 
       const handleValueChange = (newValue) => {
-      setValue(newValue); 
+        setValue(newValue); 
       } 
       const today = new Date(); // Gets today's date
       today.setDate(today.getDate() + 30); 
@@ -279,7 +279,8 @@ export default function DaySchedule({ initialShifts, employee }) {
     <>
     <div className="shadow-md pb-10 pt-5 rounded-md px-5 mx-4 min-h-min"> 
     
-      <h1 className="prose lg:prose-2xl pb-6">{employee.fullName}</h1>
+    <h1 className="prose prose-xl pb-6">{employee.fullName}</h1>
+      
 
       <div className="w-64 mb-4">
         <Datepicker 

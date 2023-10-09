@@ -2,15 +2,11 @@ import type { ReactElement } from 'react'
 import type { NextPageWithLayout } from './_app'
 import DaySchedule from "../components/DaySchedule"
 import styles from  "../styles/scheduler.module.css";
-
-
 import { api } from "~/utils/api";
-
 import Layout from '../components/Layout'
 import DrawerLayout from '~/components/DrawerLayout';
 import { employees } from '~/classes/employee';
 import { getColor } from '~/components/functions';
-
 
 function Home() {
 
@@ -21,9 +17,7 @@ function Home() {
   ].map((shift)=>{
     return {...shift, color: getColor()}
   })
-
   
-
   return (
     <>
 

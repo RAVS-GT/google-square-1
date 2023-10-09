@@ -103,6 +103,7 @@ export default function DaySchedule({ initialShifts, employee }) {
 
   const handleDelete = (deletedShift) => {
     setShifts(prevShifts => prevShifts.filter(shift => shift !== deletedShift));
+    setTimeout(()=>{setSelectedShift(null)}, 200);
   };
 
 
@@ -222,13 +223,20 @@ export default function DaySchedule({ initialShifts, employee }) {
 
       const [isMouseDragging, setIsMouseDragging] = useState(false);
       const [dragStart, setDragStart] = useState(null);
+      const [toAdd, setToAdd] = useState(false);
   
       const handleMouseDown = (e) => {
+        if(!toAdd){
+          return;
+        }
         setIsMouseDragging(true);
           setDragStart(e.clientX + scrollRef.current.scrollLeft)
       };
   
       const handleMouseUp = (e) => {
+        if(!toAdd){
+          return;
+        }
           if (isMouseDragging) {
               const dragEnd = e.clientX + scrollRef.current.scrollLeft;
               // Convert dragStart and dragEnd to time values (e.g., "09:00", "11:30")
@@ -255,7 +263,10 @@ export default function DaySchedule({ initialShifts, employee }) {
 
               // Create a new shift object and add it to the state
               console.log(newShift)
-              setShifts(prevShifts => [...prevShifts, newShift]);
+              setToAdd(false)
+              setShifts(prevShifts => [...prevShifts, newShift].sort(
+                (a, b) => timeToMinutes(a.start) - timeToMinutes(b.start)
+              ));
               setIsMouseDragging(false);
           }
       };
@@ -278,14 +289,17 @@ export default function DaySchedule({ initialShifts, employee }) {
     <h1 className="prose prose-xl pb-6">{employee.fullName}</h1>
       
 
-      <div className="w-64 mb-4">
-        <Datepicker 
-          value={value} 
-          onChange={handleValueChange} 
-          asSingle={true}
-          useRange={false}
-          maxDate={today}
-        />  
+      <div className="flex flex-row space-x-4 items-center mb-4">
+        <div className="w-64">
+          <Datepicker 
+            value={value} 
+            onChange={handleValueChange} 
+            asSingle={true}
+            useRange={false}
+            maxDate={today}
+          />  
+        </div>
+        <button className="btn btn-sm" onClick={()=>{setToAdd(!toAdd)}}>{toAdd?"Cancel":"Add"}</button>
       </div>
         <div className={styles.daySchedule} 
             ref={scrollRef} 
@@ -298,49 +312,51 @@ export default function DaySchedule({ initialShifts, employee }) {
             onMouseUp={handleMouseUp}
         >
             <GridTable />
-            <div className={styles.shiftsLayer}
-            >
-            {shifts.map((shift, index) => {
-                const startMinute = timeToMinutes(shift.start);
-                const widthInMinutes = timeToMinutes(shift.end) - startMinute;
-                const bounds = getBoundsForShift(shift, shifts);
-                return (
-                <Draggable
-                    axis="x"
-                    bounds={{
-                    top: 0,
-                    left: bounds.left,
-                    right: bounds.right,
-                    bottom: 0
-                    }}
-                    key={index}
-                    position={{ x: shift.x, y: 0 }}
-                    onDrag={eventControl}
-                    onStop={(e, data) => {
-                        handleDragStop(data, shift)
-                        eventControl(e, data)
-                    }}
-                    disabled={selectedShift == null || shift.start != selectedShift.start}
-                >
-                    <div
-                    className={styles.shiftBlock}
-                    style={{
-                        width: `${widthInMinutes * MINUTE_WIDTH}px`,
-                        backgroundColor: shift.color,
-                        border: shift.start == selectedShift?.start ? '2px solid blue' : 'none',
-                    }}
-                    onClick={() => handleShiftClick(shift)}
-                    >
-                        {shift.start} - {shift.end}
-                        <button className={styles.deleteShift} onClick={() => handleDelete(shift)}>X</button>
-                    </div>
-                </Draggable>
-                );
-            })}
+            <div className={styles.shiftsLayer}>
+              {shifts.map((shift, index) => {
+                  const startMinute = timeToMinutes(shift.start);
+                  const widthInMinutes = timeToMinutes(shift.end) - startMinute;
+                  const bounds = getBoundsForShift(shift, shifts);
+                  return (
+                  <Draggable
+                      axis="x"
+                      bounds={{
+                      top: 0,
+                      left: bounds.left,
+                      right: bounds.right,
+                      bottom: 0
+                      }}
+                      key={index}
+                      position={{ x: shift.x, y: 0 }}
+                      onDrag={eventControl}
+                      onStop={(e, data) => {
+                          handleDragStop(data, shift)
+                          eventControl(e, data)
+                      }}
+                      disabled={selectedShift == null || shift.start != selectedShift.start}
+                  >
+                      <div
+                      className={styles.shiftBlock}
+                      style={{
+                          width: `${widthInMinutes * MINUTE_WIDTH}px`,
+                          backgroundColor: shift.color,
+                          border: shift.start == selectedShift?.start ? '2px solid blue' : 'none',
+                      }}
+                      onClick={() => handleShiftClick(shift)}
+                      >
+                          {shift.start} - {shift.end}
+                          <button className={styles.deleteShift} onClick={() => handleDelete(shift)}>
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg>
+                          </button>
+                      </div>
+                  </Draggable>
+                  );
+              })}
             </div>
+            
         </div>
         </div>
-        <ShiftForm
+        {selectedShift?<ShiftForm
                     shift={selectedShift==null ? {start:'', end:''} : selectedShift}
                     error={error}
                     onCancel={() => {
@@ -348,7 +364,7 @@ export default function DaySchedule({ initialShifts, employee }) {
                         setError(""); // Reset the error when cancelling
                     }}          
                     onSubmit={handleConfirm}
-                /> 
+                />:<></> }
         </div>  
     </>
   );

@@ -29,7 +29,15 @@ export const getColor=()=>{
   }
 
 export const makeShift = (start, end) => {
+  const correctTime = (time) => {
+  //   if(getHours(time) < 10) {
+  //     return'0'+time;
+  // }
+    return time;
+  }
   const color = getColor();
+  start=correctTime(start)
+  end=correctTime(end)
   return {
     start,
     end,

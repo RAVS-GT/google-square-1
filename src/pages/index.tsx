@@ -33,7 +33,7 @@ function Home() {
             <DaySchedule initialShifts={shifts} employee={employee}></DaySchedule>
           </div>
         ))}
-
+        <div className="h-48"></div>
       </main>
     </>
   );

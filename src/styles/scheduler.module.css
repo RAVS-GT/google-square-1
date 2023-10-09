@@ -90,15 +90,17 @@
     position: absolute;
     top: 2px;
     right: 2px;
-    background: rgba(255, 0, 0, 0.6); /* Red background */
-    border: none;
+    /* background: rgba(255, 0, 0, 0.6); Red background */
+    /* border: 1px solid #ff0000; */
     cursor: pointer;
     color: white;
     border-radius: 50%; /* makes it circular */
-    width: 20px;
-    height: 20px;
+    width: 25px;
+    height: 25px;
     text-align: center;
     line-height: 20px; /* vertically center the X */
+    margin-right: 4px;
+    z-index: 10;
   }
 
   .shiftBlock:hover .deleteShift {

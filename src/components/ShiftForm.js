@@ -11,14 +11,14 @@ export default function ShiftForm({ shift, error, onCancel, onSubmit }) {
     const [end, seEnd] = React.useState(shift.end);
 
     const setStart = (start) => {
-        if(getHours(start) < 10) {
+        if(start.split(':')[0].length !== 2 && getHours(start) < 10) {
             start = '0'+start;
         }
         seStart(start);
     }
 
     const setEnd = (end) => {
-        if(getHours(end) < 10) {
+        if(end.split(':')[0].length !== 2 && getHours(end) < 10) {
             end = '0'+end;
         }
         seEnd(end);
@@ -50,6 +50,7 @@ export default function ShiftForm({ shift, error, onCancel, onSubmit }) {
                     max="23:55"
                     step="300"
                     value={start}
+                    className="w-32"
                 />
             </div>
 
@@ -68,6 +69,7 @@ export default function ShiftForm({ shift, error, onCancel, onSubmit }) {
                     max="23:55"
                     step="300"
                     value={end}
+                    className="w-32"
                 />
             </div>
             

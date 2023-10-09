@@ -224,6 +224,7 @@ export default function DaySchedule({ initialShifts, employee }) {
       const [isMouseDragging, setIsMouseDragging] = useState(false);
       const [dragStart, setDragStart] = useState(null);
       const [toAdd, setToAdd] = useState(false);
+      const [isChanged, setChanged] = useState(false);
   
       const handleMouseDown = (e) => {
         if(!toAdd){
@@ -299,7 +300,8 @@ export default function DaySchedule({ initialShifts, employee }) {
             maxDate={today}
           />  
         </div>
-        <button className="btn btn-sm" onClick={()=>{setToAdd(!toAdd)}}>{toAdd?"Cancel":"Add"}</button>
+        <button className="btn btn-sm btn-outline" onClick={()=>{setToAdd(!toAdd)}}>{toAdd?"Cancel":"Add"}</button>
+        <button className="btn btn-sm btn-outline" disabled={!isChanged} onClick={()=>{}}>{"Save"}</button>
       </div>
         <div className={styles.daySchedule} 
             ref={scrollRef} 

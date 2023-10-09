@@ -31,53 +31,62 @@ export default function ShiftForm({ shift, error, onCancel, onSubmit }) {
     , [shift]);
     
     return (
-        <div className="shift-form">
+        <div className="mt-6">
             <h2>Edit Shift</h2>  
           
           <div className="form-control w-full max-w-xs">
             <label className="label">
               <span className="label-text">Start Time</span>
             </label>
-            <input
-                type="time"
-                name="start"
-                onChange={ev => {
-                    setStart(ev.target.value)
-                }}
-                min="00:00"
-                max="23:55"
-                step="300"
-                value={start}
-            />
+
+            <div className="rounded-md border-2 border-slate-200 px-3">
+                <input
+                    type="time"
+                    name="start"
+                    onChange={ev => {
+                        setStart(ev.target.value)
+                    }}
+                    min="00:00"
+                    max="23:55"
+                    step="300"
+                    value={start}
+                />
+            </div>
 
             <label className="label">
               <span className="label-text">End Time</span>
             </label>
 
-            <input
-                type="time"
-                name="end"
-                onChange={ev => {
-                    setEnd(ev.target.value)
-                }}
-                min="00:00"
-                max="23:55"
-                step="300"
-                value={end}
-            />
+            <div className="rounded-md border-2 border-slate-200 px-3">
+                <input
+                    type="time"
+                    name="end"
+                    onChange={ev => {
+                        setEnd(ev.target.value)
+                    }}
+                    min="00:00"
+                    max="23:55"
+                    step="300"
+                    value={end}
+                />
+            </div>
             
           </div>
 
           {/* Display error message */}
           {error && <p style={{ color: 'red' }}>{error}</p>}
+
+          <div className="flex flex-row space-x-2 mt-4">
     
-          <button className="btn btn-primary" onClick={onCancel}>Cancel</button>
-          <button className="btn btn-primary" onClick={()=>{onSubmit({
-            start:start,
-            end:end,
-            color:shift.color,
-            x:calculateX(start),
-        })}}>Confirm</button>
+            <button className="btn btn-sm" onClick={onCancel}>Cancel</button>
+            <button className="btn btn-sm" onClick={()=>{onSubmit({
+                start:start,
+                end:end,
+                color:shift.color,
+                x:calculateX(start),
+            })}}>Confirm</button>
+            
+        </div>
         </div>
       );
     }

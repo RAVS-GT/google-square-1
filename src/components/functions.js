@@ -14,6 +14,29 @@ export const getHours = (time) => {
     return hours;
     };
 
+  let lastColor = null;
+  
+export const getColor=()=>{
+  
+      const colors=["#ff1d58","#f75990","#fff685","#00DDFF","#0049B7"];
+      //randomly get a color from the list. make sure no two adjacent shifts have the same color
+      let color = colors[Math.floor(Math.random() * colors.length)];
+      while(color === lastColor){
+          color = colors[Math.floor(Math.random() * colors.length)];
+      }
+      lastColor = color;
+      return color;
+  }
+
+export const makeShift = (start, end) => {
+  const color = getColor();
+  return {
+    start,
+    end,
+    color,
+    x: timeToMinutes(start) * MINUTE_WIDTH  };
+}
+
 export const minutesToTime = (minutes) => {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
@@ -26,6 +49,11 @@ export const getMovementInPixels = (deltaX) => {
     percentageDragged <= -DRAG_THRESHOLD
     ? Math.ceil(deltaX / SNAP_INTERVAL) * SNAP_INTERVAL
     : Math.floor(deltaX / SNAP_INTERVAL) * SNAP_INTERVAL;
+};
+
+//changing time in minutes to multiple of 5
+export const snapToGrid = (x) => {
+  return Math.round(x / 5) * 5;
 };
 
 export const calculateX = (start) => {

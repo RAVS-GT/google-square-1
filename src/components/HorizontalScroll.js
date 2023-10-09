@@ -4,6 +4,7 @@ export default function useHorizontalScroll() {
   const elRef = useRef();
   useEffect(() => {
     const el = elRef.current;
+    el.scrollLeft=el.scrollWidth/2;
     if (el) {
       const onWheel = e => {
         if (e.deltaY == 0) return;

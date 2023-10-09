@@ -8,6 +8,15 @@
     width: 100vw;
 }
 
+.containerCard {
+    width: 100%;
+    border-radius: 8px;
+    --shadow-color: hsl(0deg 0% 0% / 0.25);
+    margin: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
 .daySchedule {
     display: flex;
     flex-direction: column;
@@ -42,6 +51,7 @@
   .gridContainer {
     position: relative;
     width: 100%;
+    height: 100px;
     /* z-index: -1; */
   }
   
@@ -60,6 +70,7 @@
     width: 120px; /* 400px per hour, divided by 60 for each minute */
     height: 100px;
     border-right: 2px solid #eee;
+    border-bottom: 2px solid #eee;
     /* padding: 5px; */
     background-color: #ffffff;
   }
@@ -69,6 +80,7 @@
     height: 70px;
     top: 15px; /* to center the shift block vertically within the grid block */
     border-radius: 8px;
+    text-align: center;
     --shadow-color: hsl(0deg 0% 0% / 0.25);
   }
 

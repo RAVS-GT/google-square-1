@@ -5,7 +5,8 @@ import "react-resizable/css/styles.css";
 import useHorizontalScroll from "./HorizontalScroll";
 import Timeline from "./Timeline";
 import ShiftForm from "./ShiftForm";
-import { timeToMinutes, minutesToTime, getMovementInPixels, MINUTE_WIDTH, } from "./functions";
+import { timeToMinutes, minutesToTime, getMovementInPixels, MINUTE_WIDTH, makeShift, snapToGrid, } from "./functions";
+import Datepicker from "react-tailwindcss-datepicker";
 
 
 
@@ -49,7 +50,7 @@ const handleWheel = (e) => {
   e.preventDefault();
 };
 
-export default function DaySchedule({ initialShifts }) {
+export default function DaySchedule({ initialShifts, employee }) {
   const [shifts, setShifts] = useState(
     initialShifts.map((shift) => ({
       ...shift,
@@ -132,19 +133,20 @@ export default function DaySchedule({ initialShifts }) {
 
   const [error, setError] = useState(""); // Use a string state for generic error messages
 
+  const checkOverlapForNewShift = (newShift) => {
+    return shifts.some(shift => {
+        if (shift === selectedShift) return false;
+        const sStart = timeToMinutes(shift.start);
+        const sEnd = timeToMinutes(shift.end);
+        const nStart = timeToMinutes(newShift.start);
+        const nEnd = timeToMinutes(newShift.end);
+        return nStart < sEnd && nEnd > sStart;
+    });
+};
 
 
     const handleConfirm = (newShift) => {
-        const checkOverlapForNewShift = (newShift) => {
-            return shifts.some(shift => {
-                if (shift === selectedShift) return false;
-                const sStart = timeToMinutes(shift.start);
-                const sEnd = timeToMinutes(shift.end);
-                const nStart = timeToMinutes(newShift.start);
-                const nEnd = timeToMinutes(newShift.end);
-                return nStart < sEnd && nEnd > sStart;
-            });
-        };
+      console.log(newShift)
 
         const isValidTime = (time) => {
             const [hours, minutes] = time.split(":");
@@ -153,6 +155,8 @@ export default function DaySchedule({ initialShifts }) {
 
         // Check if start time is after end time
         if (timeToMinutes(newShift.start) >= timeToMinutes(newShift.end)) {
+          console.log(newShift.start, newShift.end)
+          console.log(timeToMinutes(newShift.start), timeToMinutes(newShift.end))
             setError("Start time must be before end time.");
             return;
         }
@@ -184,6 +188,9 @@ export default function DaySchedule({ initialShifts }) {
         // Deselect the shift after confirming and reset error state
         setSelectedShift(null);
         setError("");
+
+        //update to database
+
     };
 
     const [isDragging, setIsDragging] = useState(false);
@@ -207,11 +214,89 @@ export default function DaySchedule({ initialShifts }) {
         }
     }
 
+    const [value, setValue] = useState({ 
+      startDate: new Date(), 
+      endDate: new Date().setMonth(11) 
+      }); 
+      const handleValueChange = (newValue) => {
+      setValue(newValue); 
+      } 
+      const today = new Date(); // Gets today's date
+      today.setDate(today.getDate() + 30); 
+
+
+      const [isMouseDragging, setIsMouseDragging] = useState(false);
+      const [dragStart, setDragStart] = useState(null);
+  
+      const handleMouseDown = (e) => {
+        setIsMouseDragging(true);
+          setDragStart(e.clientX);
+      };
+  
+      const handleMouseUp = (e) => {
+          if (isMouseDragging) {
+              const dragEnd = e.clientX;
+              // Convert dragStart and dragEnd to time values (e.g., "09:00", "11:30")
+              const startTime = convertPixelsToTime(dragStart);
+              const endTime = convertPixelsToTime(dragEnd);
+              const newShift = makeShift(startTime, endTime)
+
+              //write a check to make sure the start time is before the end time and that the shift is at least 15 minutes long
+              if(timeToMinutes(endTime) - timeToMinutes(startTime) < 30) {
+                console.log('its too short')
+                  setIsMouseDragging(false);
+                  return;
+              }
+              if(timeToMinutes(endTime) - timeToMinutes(startTime) > 720) {
+                  setIsMouseDragging(false);
+                  return;
+              }
+              // Check for overlap with existing shifts
+              if (checkOverlapForNewShift(newShift)) {
+                console.log('its fucking overlapping')
+                  setIsMouseDragging(false);
+                  return;
+              }
+
+              // Create a new shift object and add it to the state
+              setShifts(prevShifts => [...prevShifts, newShift]);
+              setIsMouseDragging(false);
+          }
+      };
+  
+      const convertPixelsToTime = (pixels) => {
+        const totalMinutes = snapToGrid(Math.floor(pixels / 2));  // Since MINUTE_WIDTH = 2
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+
+        console.log(`${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes}`)
+        
+        // Convert hours and minutes to a string format HH:MM
+        return `${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
+    };
+
   return (
     <>
+    <div className="shadow-md pb-10 pt-5 rounded-md px-5 mx-4 min-h-min"> 
+    
+      <h1 className="prose lg:prose-2xl pb-6">{employee.fullName}</h1>
+
+      <div className="w-64 mb-4">
+        <Datepicker 
+          value={value} 
+          onChange={handleValueChange} 
+          asSingle={true}
+          useRange={false}
+          maxDate={today}
+        />  
+      </div>
         <div className={styles.daySchedule} ref={scrollRef}>
         <Timeline />
-        <div className={styles.gridContainer}>
+        <div 
+          className={styles.gridContainer}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
+        >
             <GridTable />
             <div className={styles.shiftsLayer}>
             {shifts.map((shift, index) => {
@@ -263,7 +348,7 @@ export default function DaySchedule({ initialShifts }) {
                     }}          
                     onSubmit={handleConfirm}
                 /> 
-                
+        </div>  
     </>
   );
 }

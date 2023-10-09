@@ -82,6 +82,8 @@
     border-radius: 8px;
     text-align: center;
     --shadow-color: hsl(0deg 0% 0% / 0.25);
+    overflow: hidden;
+    white-space: nowrap;
   }
 
   .deleteShift {

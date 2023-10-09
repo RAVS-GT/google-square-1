@@ -44,11 +44,6 @@ const getBoundsForShift = (currentShift, shifts) => {
   return { left: leftBoundary, right: rightBoundary };
 };
 
-const handleWheel = (e) => {
-  const container = e.currentTarget;
-  container.scrollLeft += e.deltaY;
-  e.preventDefault();
-};
 
 export default function DaySchedule({ initialShifts, employee }) {
   const [shifts, setShifts] = useState(
@@ -230,12 +225,12 @@ export default function DaySchedule({ initialShifts, employee }) {
   
       const handleMouseDown = (e) => {
         setIsMouseDragging(true);
-          setDragStart(e.clientX);
+          setDragStart(e.clientX + scrollRef.current.scrollLeft)
       };
   
       const handleMouseUp = (e) => {
           if (isMouseDragging) {
-              const dragEnd = e.clientX;
+              const dragEnd = e.clientX + scrollRef.current.scrollLeft;
               // Convert dragStart and dragEnd to time values (e.g., "09:00", "11:30")
               const startTime = convertPixelsToTime(dragStart);
               const endTime = convertPixelsToTime(dragEnd);
@@ -259,13 +254,14 @@ export default function DaySchedule({ initialShifts, employee }) {
               }
 
               // Create a new shift object and add it to the state
+              console.log(newShift)
               setShifts(prevShifts => [...prevShifts, newShift]);
               setIsMouseDragging(false);
           }
       };
   
       const convertPixelsToTime = (pixels) => {
-        const totalMinutes = snapToGrid(Math.floor(pixels / 2));  // Since MINUTE_WIDTH = 2
+        const totalMinutes = snapToGrid(Math.floor(pixels / 2)-20);  // Since MINUTE_WIDTH = 2
         const hours = Math.floor(totalMinutes / 60);
         const minutes = totalMinutes % 60;
 
@@ -291,15 +287,19 @@ export default function DaySchedule({ initialShifts, employee }) {
           maxDate={today}
         />  
       </div>
-        <div className={styles.daySchedule} ref={scrollRef}>
+        <div className={styles.daySchedule} 
+            ref={scrollRef} 
+            
+        >
         <Timeline />
         <div 
           className={styles.gridContainer}
           onMouseDown={handleMouseDown}
-          onMouseUp={handleMouseUp}
+            onMouseUp={handleMouseUp}
         >
             <GridTable />
-            <div className={styles.shiftsLayer}>
+            <div className={styles.shiftsLayer}
+            >
             {shifts.map((shift, index) => {
                 const startMinute = timeToMinutes(shift.start);
                 const widthInMinutes = timeToMinutes(shift.end) - startMinute;

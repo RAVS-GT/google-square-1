@@ -55,7 +55,6 @@ export const schedulerRouter = createTRPCRouter({
     }),
 
   getAllShifts: publicProcedure
-    .input(z.object({}))
     .query(async () => {
       const response = await fetch(`${BASE_URL}/get_all_shifts`);
       const data = await response.json();

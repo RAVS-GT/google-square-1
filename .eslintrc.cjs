@@ -28,6 +28,7 @@ const config = {
     "@typescript-eslint/no-unsafe-argument": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/ban-types": "off",
+    "react-hooks/rules-of-hooks": "off",
     
 
     "@typescript-eslint/consistent-type-imports": [

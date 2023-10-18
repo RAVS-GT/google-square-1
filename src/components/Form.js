@@ -1,6 +1,9 @@
 import React, { use, useEffect, useState } from "react"
 
 export default function Form()  {
+
+  const option=['Jessica Carter', 'John Doe', 'Jane Doe', 'John Smith', 'Jane Smith']
+
     const createErrorText = (error) => {
       return (
         <p className="text-red-500 text-xs italic">{error}</p>
@@ -120,7 +123,6 @@ const validateForm = () => {
       return Object.keys(newErrors).length === 0;
 };
 
-
 return (
   <form className="w-full max-w-lg">
       <div className="flex flex-wrap mb-6">
@@ -154,8 +156,8 @@ return (
           })}
       </div>
       {formSelect({
-        label: "State",
-        options: ["New Mexico", "Missouri", "Texas"],
+        label: "Employee",
+        options: option,
         error: errors.state,
         setValue: value => handleInputChange("state", value),
         value: formData.state,

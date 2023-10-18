@@ -1,4 +1,4 @@
-class Employee {
+export class Employee {
     employeeId: string;
     status: string;
     givenName: string;
@@ -15,30 +15,30 @@ class Employee {
     };
 
     constructor(data: any) {
-        this.employeeId = data.team_member.id;
-        this.status = data.team_member.status;
-        this.givenName = data.team_member.given_name;
-        this.familyName = data.team_member.family_name;
-        this.email = data.team_member.email_address;
-        this.phoneNumber = data.team_member.phone_number;
+        this.employeeId = data.id;
+        this.status = data.status;
+        this.givenName = data.given_name;
+        this.familyName = data.family_name;
+        this.email = data.email_address;
+        this.phoneNumber = data.phone_number;
 
         // The following properties are optional and will be set only if they exist in the data
-        if (data.team_member.reference_id) {
-            this.referenceId = data.team_member.reference_id;
+        if (data.reference_id) {
+            this.referenceId = data.reference_id;
         }
-        if (data.team_member.is_owner !== undefined) {
-            this.isOwner = data.team_member.is_owner;
+        if (data.is_owner !== undefined) {
+            this.isOwner = data.is_owner;
         }
-        if (data.team_member.created_at) {
-            this.createdAt = new Date(data.team_member.created_at);
+        if (data.created_at) {
+            this.createdAt = new Date(data.created_at);
         }
-        if (data.team_member.updated_at) {
-            this.updatedAt = new Date(data.team_member.updated_at);
+        if (data.updated_at) {
+            this.updatedAt = new Date(data.updated_at);
         }
-        if (data.team_member.assigned_locations) {
+        if (data.assigned_locations) {
             this.assignedLocations = {
-                assignmentType: data.team_member.assigned_locations.assignment_type,
-                locationIds: data.team_member.assigned_locations.location_ids
+                assignmentType: data.assigned_locations.assignment_type,
+                locationIds: data.assigned_locations.location_ids
             };
         }
     }

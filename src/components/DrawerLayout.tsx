@@ -3,6 +3,7 @@ import React from "react";
 import { useSessionStorage } from "usehooks-ts";
 import Navbar from "./Navbar";
 import styles from  "../styles/scheduler.module.css";
+import { useRouter } from "next/router";
 
 
 type Props = {
@@ -11,6 +12,7 @@ type Props = {
 
 const DrawerLayout = ({ children }: Props) => {
   //initialize state here. we use a key and a default state
+  const router=useRouter();
   const [open, setOpen] = useSessionStorage("drawer", false);
   return (
     
@@ -34,9 +36,8 @@ const DrawerLayout = ({ children }: Props) => {
             <label htmlFor="my-drawer-2" aria-label="close sidebar" className="drawer-overlay" onClick={()=>{setOpen(false)}}></label> 
             <ul className="menu p-4 w-80 min-h-full bg-base-200 text-base-content">
             {/* Sidebar content here */}
-            <li><a>Sidebar Item 1</a></li>
-            <li><a>Sidebar Item 2</a></li>
-            <li><a>Sidebar Item 3</a></li>
+            <li><a onClick={()=>{router.push('/')}}>Main Page</a></li>
+            <li><a onClick={()=>{router.push('/requests')}}>Pending Requests</a></li>
             </ul>
         </div>
     </div>

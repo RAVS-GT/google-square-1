@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Draggable from "react-draggable";
 import styles from  "../styles/scheduler.module.css";
 import "react-resizable/css/styles.css";
 import useHorizontalScroll from "./HorizontalScroll";
 import Timeline from "./Timeline";
 import ShiftForm from "./ShiftForm";
-import { timeToMinutes, minutesToTime, getMovementInPixels, MINUTE_WIDTH, makeShift, snapToGrid, } from "./functions";
+import { timeToMinutes, minutesToTime, getMovementInPixels, MINUTE_WIDTH, makeShift, snapToGrid, uniqueId, dateToISO, } from "./functions";
 import Datepicker from "react-tailwindcss-datepicker";
+import { api } from "~/utils/api";
 
 
 
@@ -46,12 +47,27 @@ const getBoundsForShift = (currentShift, shifts) => {
 
 
 export default function DaySchedule({ initialShifts, employee }) {
+
+  const setNewShifts=api.schedule.updateShiftsForDayAndEmployee.useMutation()
+
+  const [date, setDate] = useState({ 
+    startDate: (new Date()).toISOString().split("T")[0],
+    endDate: new Date().setMonth(11) 
+    });
+
+  useEffect(() => {
+    getShifts.refetch()
+  }, [date])
+
   const [shifts, setShifts] = useState(
     initialShifts.map((shift) => ({
       ...shift,
       x: timeToMinutes(shift.start) * MINUTE_WIDTH
     }))
   );
+
+  console.log(date.startDate)
+  const getShifts=api.schedule.getShiftsByDayAndEmployee.useQuery({day: date.startDate, employeeId: employee.employeeId})
 
   const updateShift = (targetShift, updates) => {
    
@@ -95,8 +111,6 @@ export default function DaySchedule({ initialShifts, employee }) {
         x: currentShift.x + deltaX
       });
 
-      console.log(newShift)
-
       setSelectedShift(newShift);
     }
   };
@@ -115,11 +129,9 @@ export default function DaySchedule({ initialShifts, employee }) {
     setError("");
     if (selectedShift!=null && selectedShift.start === clickedShift.start) {
       // If the clicked shift is already selected, deselect it
-      console.log('deselcting')
       setSelectedShift(null);
     } else {
       // Otherwise, select the clicked shift
-        console.log('selecting')
       setSelectedShift(clickedShift);
     }
   };
@@ -142,7 +154,6 @@ export default function DaySchedule({ initialShifts, employee }) {
 
 
     const handleConfirm = (newShift) => {
-      console.log(newShift)
 
         const isValidTime = (time) => {
             const [hours, minutes] = time.split(":");
@@ -151,8 +162,6 @@ export default function DaySchedule({ initialShifts, employee }) {
 
         // Check if start time is after end time
         if (timeToMinutes(newShift.start) >= timeToMinutes(newShift.end)) {
-          console.log(newShift.start, newShift.end)
-          console.log(timeToMinutes(newShift.start), timeToMinutes(newShift.end))
             setError("Start time must be before end time.");
             return;
         }
@@ -210,12 +219,9 @@ export default function DaySchedule({ initialShifts, employee }) {
         }
     }
 
-    const [value, setValue] = useState({ 
-      startDate: new Date(), 
-      endDate: new Date().setMonth(11) 
-      }); 
+    
       const handleValueChange = (newValue) => {
-        setValue(newValue); 
+        setDate(newValue); 
       } 
       const today = new Date(); // Gets today's date
       today.setDate(today.getDate() + 30); 
@@ -247,7 +253,6 @@ export default function DaySchedule({ initialShifts, employee }) {
 
               //write a check to make sure the start time is before the end time and that the shift is at least 15 minutes long
               if(timeToMinutes(endTime) - timeToMinutes(startTime) < 30) {
-                console.log('its too short')
                   setIsMouseDragging(false);
                   return;
               }
@@ -257,13 +262,11 @@ export default function DaySchedule({ initialShifts, employee }) {
               }
               // Check for overlap with existing shifts
               if (checkOverlapForNewShift(newShift)) {
-                console.log('its fucking overlapping')
                   setIsMouseDragging(false);
                   return;
               }
 
               // Create a new shift object and add it to the state
-              console.log(newShift)
               setToAdd(false)
               setShifts(prevShifts => [...prevShifts, newShift].sort(
                 (a, b) => timeToMinutes(a.start) - timeToMinutes(b.start)
@@ -277,11 +280,85 @@ export default function DaySchedule({ initialShifts, employee }) {
         const hours = Math.floor(totalMinutes / 60);
         const minutes = totalMinutes % 60;
 
-        console.log(`${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes}`)
         
         // Convert hours and minutes to a string format HH:MM
         return `${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
     };
+
+  // if(getShifts.isLoading){
+  //   return(
+  //     <div className="shadow-md pb-10 pt-5 rounded-md px-5 mx-4 min-h-min"> 
+  //       <div className="flex flex-row pt-10">
+  //         <span className="loading loading-spinner loading-md"></span>
+  //       </div>
+  //     </div>
+  //   )
+  // }
+
+  useEffect(() => {
+    if(getShifts.isSuccess){
+      console.log('setting shifts')
+      // changed
+      // setShifts(getShifts.data.map((shift) => {
+
+      //   const convertFromISO = (startISO, endISO) => {
+      //     const startDateTime = new Date(startISO);
+      //     const endDateTime = new Date(endISO);
+      
+      //     const formatTime = (date) => {
+      //         const hours = String(date.getUTCHours()).padStart(2, '0');
+      //         const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+      //         return `${hours}:${minutes}`;
+      //     };
+      
+      //     return {
+      //         startTime: formatTime(startDateTime),
+      //         endTime: formatTime(endDateTime)
+      //     };
+      // }
+      //   const time=convertFromISO(shift.start_at, shift.end_at)
+      //   return makeShift(time.startTime, time.endTime)
+      //   }
+      // ))
+    }
+  }, [getShifts.isSuccess])
+
+  const onSave=()=>{
+    function convertToISO(startTime, endTime) {
+      const currentDate = new Date();
+      const currentDateString = currentDate.toISOString().split('T')[0];  // Extracting the date part
+
+      console.log(startTime, endTime)
+  
+      // Combining the current date with the provided times
+      const startDateTime = new Date(`${currentDateString}T${startTime}:00Z`);
+      const endDateTime = new Date(`${currentDateString}T${endTime}:00Z`);
+
+      console.log(`${currentDateString}T${startTime}:00Z`, `${currentDateString}T${endTime}:00Z`)
+  
+      return {
+          // startISO: startDateTime.toISOString(),
+          // endISO: endDateTime.toISOString()
+          startISO: `${currentDateString}T${startTime}:00Z`,
+          endISO: `${currentDateString}T${endTime}:00Z`
+      };
+  }
+  
+  console.log(shifts)
+
+    setNewShifts.mutate({shifts: shifts.map((shift)=>{
+      const { startISO, endISO } = convertToISO(shift.start, shift.end);
+      console.log(shift)
+      return ({
+      start_at:startISO,
+      end_at:endISO,
+      id: uniqueId().toString(),
+    })
+  }
+    ), day: (date.startDate), employeeId: employee.employeeId})
+    getShifts.refetch()
+  }
+
 
   return (
     <>
@@ -293,7 +370,7 @@ export default function DaySchedule({ initialShifts, employee }) {
       <div className="flex flex-row space-x-4 items-center mb-4">
         <div className="w-64">
           <Datepicker 
-            value={value} 
+            value={date} 
             onChange={handleValueChange} 
             asSingle={true}
             useRange={false}
@@ -301,62 +378,71 @@ export default function DaySchedule({ initialShifts, employee }) {
           />  
         </div>
         <button className="btn btn-sm btn-outline" onClick={()=>{setToAdd(!toAdd)}}>{toAdd?"Cancel":"Add"}</button>
-        <button className="btn btn-sm btn-outline" disabled={!isChanged} onClick={()=>{}}>{"Save"}</button>
+        <button className="btn btn-sm btn-outline" disabled={setNewShifts.isLoading} onClick={()=>{onSave()}}>{"Save"}</button>
       </div>
         <div className={styles.daySchedule} 
             ref={scrollRef} 
             
         >
-        <Timeline />
-        <div 
-          className={styles.gridContainer}
-          onMouseDown={handleMouseDown}
-            onMouseUp={handleMouseUp}
-        >
-            <GridTable />
-            <div className={styles.shiftsLayer}>
-              {shifts.map((shift, index) => {
-                  const startMinute = timeToMinutes(shift.start);
-                  const widthInMinutes = timeToMinutes(shift.end) - startMinute;
-                  const bounds = getBoundsForShift(shift, shifts);
-                  return (
-                  <Draggable
-                      axis="x"
-                      bounds={{
-                      top: 0,
-                      left: bounds.left,
-                      right: bounds.right,
-                      bottom: 0
-                      }}
-                      key={index}
-                      position={{ x: shift.x, y: 0 }}
-                      onDrag={eventControl}
-                      onStop={(e, data) => {
-                          handleDragStop(data, shift)
-                          eventControl(e, data)
-                      }}
-                      disabled={selectedShift == null || shift.start != selectedShift.start}
-                  >
-                      <div
-                      className={styles.shiftBlock}
-                      style={{
-                          width: `${widthInMinutes * MINUTE_WIDTH}px`,
-                          backgroundColor: shift.color,
-                          border: shift.start == selectedShift?.start ? '2px solid blue' : 'none',
-                      }}
-                      onClick={() => handleShiftClick(shift)}
-                      >
-                          {shift.start} - {shift.end}
-                          <button className={styles.deleteShift} onClick={() => handleDelete(shift)}>
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg>
-                          </button>
-                      </div>
-                  </Draggable>
-                  );
-              })}
+        {
+          getShifts.isLoading? (
+            <div className="flex flex-row pt-10">
+              <span className="loading loading-spinner loading-md"></span>
             </div>
-            
-        </div>
+          ):(
+          <div>
+            <Timeline />
+            <div 
+              className={styles.gridContainer}
+              onMouseDown={handleMouseDown}
+                onMouseUp={handleMouseUp}
+            >
+                <GridTable />
+                <div className={styles.shiftsLayer}>
+                  {shifts.map((shift, index) => {
+                      const startMinute = timeToMinutes(shift.start);
+                      const widthInMinutes = timeToMinutes(shift.end) - startMinute;
+                      const bounds = getBoundsForShift(shift, shifts);
+                      return (
+                      <Draggable
+                          axis="x"
+                          bounds={{
+                          top: 0,
+                          left: bounds.left,
+                          right: bounds.right,
+                          bottom: 0
+                          }}
+                          key={index}
+                          position={{ x: shift.x, y: 0 }}
+                          onDrag={eventControl}
+                          onStop={(e, data) => {
+                              handleDragStop(data, shift)
+                              eventControl(e, data)
+                          }}
+                          disabled={selectedShift == null || shift.start != selectedShift.start}
+                      >
+                          <div
+                          className={styles.shiftBlock}
+                          style={{
+                              width: `${widthInMinutes * MINUTE_WIDTH}px`,
+                              backgroundColor: shift.color,
+                              border: shift.start == selectedShift?.start ? '2px solid blue' : 'none',
+                          }}
+                          onClick={() => handleShiftClick(shift)}
+                          >
+                              {shift.start} - {shift.end}
+                              <button className={styles.deleteShift} onClick={() => handleDelete(shift)}>
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg>
+                              </button>
+                          </div>
+                      </Draggable>
+                      );
+                  })}
+                </div>
+              </div>
+          </div>
+        )
+        }
         </div>
         {selectedShift?<ShiftForm
                     shift={selectedShift==null ? {start:'', end:''} : selectedShift}

@@ -45,6 +45,17 @@ export const makeShift = (start, end) => {
     x: timeToMinutes(start) * MINUTE_WIDTH  };
 }
 
+export function uniqueId() {
+  return Math.floor(Math.random() * Date.now());
+ }
+
+ //date to ISOSTRING
+  export const dateToISO = (date) => {
+    console.log(date)
+    return date.toISOString().split("T")[0];
+  }
+ 
+
 export const minutesToTime = (minutes) => {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;

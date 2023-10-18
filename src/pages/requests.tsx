@@ -16,14 +16,6 @@ import { get } from 'http'
 
 function Home() {
 
-  const shifts = [
-    { start: "13:00", end: "13:45"},
-    { start: "17:00", end: "18:00"},
-    // { start: "20:00", end: "22:45"},
-  ].map((shift)=>{
-    return {...shift, color: getColor()}
-  })
-
   const getAllIds=api.schedule.getIds.useQuery()
 
   const [employee,setEmployee]=useState<Employee[]>([])
@@ -35,7 +27,7 @@ function Home() {
   // const { userId } : { userId: string | null } = getAuth();
   // const user = clerkClient.users.getUser(userId!);
 
-  const {user} = useUser();
+const {user} = useUser();
 
   const getEmployee=api.schedule.checkEmail.useQuery({ user: user })
 
@@ -52,7 +44,7 @@ function Home() {
       (getAllIds.isError? 
         (<span className="text-red-500">Error</span>)   
         : 
-        getAllIds.data.map((data) => (  
+        getAllIds.data.map((data) => (
         <div key={data.id} className="my-4">
           <DaySchedule initialShifts={shifts} employee={new Employee(data)}></DaySchedule>
         </div>
@@ -64,15 +56,7 @@ function Home() {
     <>
 
       <main>
-        {getEmployee.isLoading?
-        (<span className="loading loading-dots loading-lg"></span>)
-        :
-        getEmployee.isError?
-        (<span className="text-red-500">Error</span>)
-        :
-        getScheduler()
-        }
-        {/* {requestTable('sdfa')} */}
+        {requestTable()}
         {/* <Chat/> */}
         {/* <ContainerCard isMin={true}>
           <Form/>

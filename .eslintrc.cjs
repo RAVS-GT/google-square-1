@@ -29,6 +29,8 @@ const config = {
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/ban-types": "off",
     "react-hooks/rules-of-hooks": "off",
+    "@typescript-eslint/require-await": "off",
+    "@typescript-eslint/prefer-nullish-coalescing": "off",
     
 
     "@typescript-eslint/consistent-type-imports": [
